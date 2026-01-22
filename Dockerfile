@@ -25,8 +25,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Playwright system dependencies (required for browser automation)
+# These are needed for Chromium to run in headless mode
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core browser dependencies
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libatspi2.0-0 \
+    # X11 extensions (needed even in headless)
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    # Graphics and rendering
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    # Audio (some pages need it)
+    libasound2 \
+    # Fonts for proper text rendering
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    # Additional libs that Chromium may need
+    libx11-xcb1 \
+    libxcb-dri3-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install Claude Code CLI globally
 RUN npm install -g @anthropic-ai/claude-code
+
+# Pre-install Playwright browsers (Chromium only to save space)
+# This speeds up first run and ensures browsers are available
+RUN npx playwright install chromium
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt ./
@@ -53,6 +89,8 @@ USER autocoder
 
 # Set Claude Code environment
 ENV ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+# Force headless mode in Docker (no display available)
+ENV PLAYWRIGHT_HEADLESS=true
 
 # Expose port
 EXPOSE 8888
