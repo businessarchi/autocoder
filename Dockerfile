@@ -51,9 +51,9 @@ ENV ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 # Expose port
 EXPOSE 8888
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8888/ || exit 1
+# Health check using Python instead of curl
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8888/')" || exit 1
 
 # Start the server
 CMD ["python", "-m", "uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8888"]
