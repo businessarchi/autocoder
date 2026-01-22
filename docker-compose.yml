@@ -15,6 +15,8 @@ services:
       - AUTH_PASSWORD=${AUTH_PASSWORD}
       # Clone projects at startup (format: CLONE_PROJECT_<NAME>=<git_url>)
       - CLONE_PROJECT_BAERP=${CLONE_PROJECT_BAERP:-}
+      # GitHub token for private repos (also enables push)
+      - GIT_TOKEN=${GIT_TOKEN:-}
     volumes:
       # Persist project data and registry
       - autocoder-data:/app/projects
