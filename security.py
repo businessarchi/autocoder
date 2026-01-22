@@ -36,6 +36,8 @@ ALLOWED_COMMANDS = {
     "git",
     # Docker (for PostgreSQL)
     "docker",
+    # Database
+    "sqlite3",
     # Process management
     "ps",
     "lsof",
