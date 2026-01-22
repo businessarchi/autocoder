@@ -47,6 +47,10 @@ for var in $(env | grep '^CLONE_PROJECT_' | cut -d= -f1); do
             rm -rf "$project_dir"
             git clone "$git_url" "$project_dir"
         fi
+
+        # Register project in Autocoder registry
+        echo "Registering $project_name in Autocoder..."
+        cd /app && python -c "from registry import register_project; from pathlib import Path; register_project('$project_name', Path('$project_dir'))" || echo "Warning: failed to register $project_name"
     fi
 done
 
