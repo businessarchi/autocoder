@@ -17,6 +17,8 @@ services:
       # Persist project data and registry
       - autocoder-data:/app/projects
       - autocoder-registry:/home/autocoder/.autocoder
+      # Mount Claude credentials from host (after running: claude auth login on host)
+      - /root/.claude:/home/autocoder/.claude:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8888/')"]
       interval: 30s
