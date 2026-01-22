@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+# Configure git for commits
+git config --global user.email "${GIT_EMAIL:-autocoder@business-architecte.fr}"
+git config --global user.name "${GIT_USER:-Autocoder}"
+
+# Store credentials for push (if GIT_TOKEN is set)
+if [ -n "$GIT_TOKEN" ]; then
+    git config --global credential.helper store
+    echo "https://${GIT_TOKEN}:x-oauth-basic@github.com" > ~/.git-credentials
+fi
+
 # Clone external projects from environment variables
 # Format: CLONE_PROJECT_<name>=<git_url>
 # For private repos, use: https://<token>@github.com/user/repo.git
