@@ -82,8 +82,9 @@ RUN useradd -m -u 1000 autocoder && \
     chown -R autocoder:autocoder /app && \
     mkdir -p /home/autocoder/.claude/debug && \
     mkdir -p /home/autocoder/.claude/statsig && \
+    mkdir -p /home/autocoder/.cache/ms-playwright && \
     chown -R autocoder:autocoder /home/autocoder && \
-    chmod -R 755 /home/autocoder/.claude && \
+    chmod -R 777 /home/autocoder/.claude && \
     chmod +x /app/entrypoint.sh
 USER autocoder
 
