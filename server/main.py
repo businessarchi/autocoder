@@ -154,8 +154,16 @@ def check_basic_auth(request: Request) -> bool:
 async def auth_middleware(request: Request, call_next):
     """HTTP Basic Auth middleware (only if AUTH_USERNAME and AUTH_PASSWORD are set)."""
     if AUTH_ENABLED:
+        # Skip auth for CORS preflight requests
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # Skip auth for health check endpoint
         if request.url.path == "/api/health":
+            return await call_next(request)
+
+        # Skip auth for static assets
+        if request.url.path.startswith("/assets/"):
             return await call_next(request)
 
         if not check_basic_auth(request):
