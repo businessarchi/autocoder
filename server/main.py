@@ -88,32 +88,50 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS - allow only localhost origins for security
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",      # Vite dev server
-        "http://127.0.0.1:5173",
-        "http://localhost:8888",      # Production
-        "http://127.0.0.1:8888",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS configuration
+# In Docker/production, allow the configured domain
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "")
+if ALLOWED_ORIGINS:
+    # Production: use explicit origins from env
+    origins = [origin.strip() for origin in ALLOWED_ORIGINS.split(",")]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # Development: allow localhost only
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # ============================================================================
 # Security Middleware
 # ============================================================================
 
+# Skip localhost check if running in Docker/production (behind reverse proxy)
+DISABLE_LOCALHOST_CHECK = os.getenv("DISABLE_LOCALHOST_CHECK", "false").lower() == "true"
+
 @app.middleware("http")
 async def require_localhost(request: Request, call_next):
-    """Only allow requests from localhost."""
+    """Only allow requests from localhost (disabled in Docker mode)."""
+    if DISABLE_LOCALHOST_CHECK:
+        return await call_next(request)
+
     client_host = request.client.host if request.client else None
 
-    # Allow localhost connections
-    if client_host not in ("127.0.0.1", "::1", "localhost", None):
+    # Allow localhost and Docker network connections
+    allowed_hosts = ("127.0.0.1", "::1", "localhost", None)
+    is_docker_network = client_host and client_host.startswith(("172.", "10.", "192.168."))
+
+    if client_host not in allowed_hosts and not is_docker_network:
         raise HTTPException(status_code=403, detail="Localhost access only")
 
     return await call_next(request)

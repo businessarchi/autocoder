@@ -7,12 +7,15 @@ services:
       - "8888:8888"
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # Production settings (behind reverse proxy)
+      - DISABLE_LOCALHOST_CHECK=true
+      - ALLOWED_ORIGINS=https://example.com
     volumes:
       # Persist project data and registry
       - autocoder-data:/app/projects
       - autocoder-registry:/home/autocoder/.autocoder
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8888/')"]
       interval: 30s
       timeout: 10s
       retries: 3
