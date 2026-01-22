@@ -10,6 +10,9 @@ services:
       # Production settings (behind reverse proxy)
       - DISABLE_LOCALHOST_CHECK=true
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      # HTTP Basic Auth (optional but recommended for public access)
+      - AUTH_USERNAME=${AUTH_USERNAME}
+      - AUTH_PASSWORD=${AUTH_PASSWORD}
     volumes:
       # Persist project data and registry
       - autocoder-data:/app/projects

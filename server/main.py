@@ -22,9 +22,12 @@ from dotenv import load_dotenv
 # Load environment variables from .env file if present
 load_dotenv()
 
+import base64
+import secrets
+
 from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .routers import (
@@ -118,6 +121,52 @@ else:
 
 # Skip localhost check if running in Docker/production (behind reverse proxy)
 DISABLE_LOCALHOST_CHECK = os.getenv("DISABLE_LOCALHOST_CHECK", "false").lower() == "true"
+
+# HTTP Basic Auth credentials (only enabled if both are set)
+AUTH_USERNAME = os.getenv("AUTH_USERNAME", "")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "")
+AUTH_ENABLED = bool(AUTH_USERNAME and AUTH_PASSWORD)
+
+
+def check_basic_auth(request: Request) -> bool:
+    """Verify HTTP Basic Auth credentials."""
+    if not AUTH_ENABLED:
+        return True
+
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Basic "):
+        return False
+
+    try:
+        encoded_credentials = auth_header[6:]  # Remove "Basic "
+        decoded = base64.b64decode(encoded_credentials).decode("utf-8")
+        username, password = decoded.split(":", 1)
+        # Use secrets.compare_digest to prevent timing attacks
+        return (
+            secrets.compare_digest(username, AUTH_USERNAME) and
+            secrets.compare_digest(password, AUTH_PASSWORD)
+        )
+    except (ValueError, UnicodeDecodeError):
+        return False
+
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    """HTTP Basic Auth middleware (only if AUTH_USERNAME and AUTH_PASSWORD are set)."""
+    if AUTH_ENABLED:
+        # Skip auth for health check endpoint
+        if request.url.path == "/api/health":
+            return await call_next(request)
+
+        if not check_basic_auth(request):
+            return Response(
+                content="Unauthorized",
+                status_code=401,
+                headers={"WWW-Authenticate": 'Basic realm="Autocoder"'},
+            )
+
+    return await call_next(request)
+
 
 @app.middleware("http")
 async def require_localhost(request: Request, call_next):
