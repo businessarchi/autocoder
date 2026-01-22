@@ -11,12 +11,12 @@ if [ -d "/claude-credentials" ]; then
     cp -f /claude-credentials/settings.json /home/autocoder/.claude/ 2>/dev/null || true
 fi
 
-# Ensure debug and statsig directories exist with full write permissions
-# Claude CLI needs to write debug logs here
-mkdir -p /home/autocoder/.claude/debug
-mkdir -p /home/autocoder/.claude/statsig
-chmod -R 777 /home/autocoder/.claude/debug
-chmod -R 777 /home/autocoder/.claude/statsig
+# Ensure debug and statsig directories exist with write permissions
+# Claude CLI writes debug logs here - errors are non-fatal
+mkdir -p /home/autocoder/.claude/debug 2>/dev/null || true
+mkdir -p /home/autocoder/.claude/statsig 2>/dev/null || true
+chmod 777 /home/autocoder/.claude/debug 2>/dev/null || true
+chmod 777 /home/autocoder/.claude/statsig 2>/dev/null || true
 
 # Configure git for commits
 git config --global user.email "${GIT_EMAIL:-autocoder@business-architecte.fr}"
