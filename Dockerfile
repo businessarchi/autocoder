@@ -44,8 +44,10 @@ COPY entrypoint.sh /app/entrypoint.sh
 # Create non-root user for security
 RUN useradd -m -u 1000 autocoder && \
     chown -R autocoder:autocoder /app && \
-    mkdir -p /home/autocoder/.claude && \
+    mkdir -p /home/autocoder/.claude/debug && \
+    mkdir -p /home/autocoder/.claude/statsig && \
     chown -R autocoder:autocoder /home/autocoder && \
+    chmod -R 755 /home/autocoder/.claude && \
     chmod +x /app/entrypoint.sh
 USER autocoder
 

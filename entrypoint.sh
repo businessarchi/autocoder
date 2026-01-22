@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+# Copy Claude credentials from mounted read-only volume to writable location
+# The mount is read-only so we copy the auth files and ensure write permissions
+if [ -d "/claude-credentials" ]; then
+    echo "Copying Claude credentials..."
+    # Copy only the essential auth files, not the whole directory
+    cp -f /claude-credentials/credentials.json /home/autocoder/.claude/ 2>/dev/null || true
+    cp -f /claude-credentials/config.json /home/autocoder/.claude/ 2>/dev/null || true
+    cp -f /claude-credentials/settings.json /home/autocoder/.claude/ 2>/dev/null || true
+    # Ensure the user owns everything and can write
+    chmod -R 755 /home/autocoder/.claude
+fi
+
 # Configure git for commits
 git config --global user.email "${GIT_EMAIL:-autocoder@business-architecte.fr}"
 git config --global user.name "${GIT_USER:-Autocoder}"
