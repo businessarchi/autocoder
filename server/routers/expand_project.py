@@ -119,29 +119,36 @@ async def expand_project_websocket(websocket: WebSocket, project_name: str):
     - {"type": "error", "content": "..."} - Error message
     - {"type": "pong"} - Keep-alive pong
     """
+    logger.info(f"Expand WS: connection for project '{project_name}'")
+
+    # Accept connection first, then validate (WebSocket requires accept before close)
+    await websocket.accept()
+
     try:
         project_name = validate_project_name(project_name)
     except HTTPException:
+        await websocket.send_json({"type": "error", "content": "Invalid project name"})
         await websocket.close(code=4000, reason="Invalid project name")
         return
 
     # Look up project directory from registry
     project_dir = _get_project_path(project_name)
     if not project_dir:
+        await websocket.send_json({"type": "error", "content": "Project not found in registry"})
         await websocket.close(code=4004, reason="Project not found in registry")
         return
 
     if not project_dir.exists():
+        await websocket.send_json({"type": "error", "content": "Project directory not found"})
         await websocket.close(code=4004, reason="Project directory not found")
         return
 
     # Verify project has app_spec.txt
     spec_path = project_dir / "prompts" / "app_spec.txt"
     if not spec_path.exists():
+        await websocket.send_json({"type": "error", "content": "Project has no spec. Create spec first."})
         await websocket.close(code=4004, reason="Project has no spec. Create spec first.")
         return
-
-    await websocket.accept()
 
     session: Optional[ExpandChatSession] = None
 

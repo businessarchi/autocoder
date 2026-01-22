@@ -2,6 +2,12 @@
 description: Create commit with detailed comment
 ---
 
+## LANGUAGE INSTRUCTION
+
+**IMPORTANT:** You MUST communicate entirely in French. All your responses and explanations must be in French. However, commit messages should remain in English following conventional commit standards (feat:, fix:, etc.).
+
+---
+
 Please create a comprehensive checkpoint commit with the following steps:
 
 1. **Initialize Git if needed**: Run `git init` if git has not been instantiated for the project yet.

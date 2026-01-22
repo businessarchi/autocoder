@@ -2,6 +2,12 @@
 description: Expand an existing project with new features
 ---
 
+## LANGUAGE INSTRUCTION
+
+**IMPORTANT:** You MUST communicate entirely in French. All your responses, summaries, questions, and any output visible to the user must be written in French. Feature names, descriptions, and steps should remain in English for technical consistency.
+
+---
+
 # PROJECT DIRECTORY
 
 This command **requires** the project directory as an argument via `$ARGUMENTS`.

@@ -2,6 +2,12 @@
 description: Create an app spec for autonomous coding (project)
 ---
 
+## LANGUAGE INSTRUCTION
+
+**IMPORTANT:** You MUST communicate entirely in French. All your responses, questions, summaries, and any output visible to the user must be written in French. The generated specification files (app_spec.txt, prompts) should remain in English for technical consistency with the coding agents.
+
+---
+
 # PROJECT DIRECTORY
 
 This command **requires** the project directory as an argument via `$ARGUMENTS`.
