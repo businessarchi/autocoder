@@ -9,7 +9,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       # Production settings (behind reverse proxy)
       - DISABLE_LOCALHOST_CHECK=true
-      - ALLOWED_ORIGINS=https://example.com
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     volumes:
       # Persist project data and registry
       - autocoder-data:/app/projects
