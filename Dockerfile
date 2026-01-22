@@ -38,11 +38,15 @@ COPY . .
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/ui/dist ./ui/dist
 
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+
 # Create non-root user for security
 RUN useradd -m -u 1000 autocoder && \
     chown -R autocoder:autocoder /app && \
     mkdir -p /home/autocoder/.claude && \
-    chown -R autocoder:autocoder /home/autocoder
+    chown -R autocoder:autocoder /home/autocoder && \
+    chmod +x /app/entrypoint.sh
 USER autocoder
 
 # Set Claude Code environment
@@ -55,5 +59,5 @@ EXPOSE 8888
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8888/api/health')" || exit 1
 
-# Start the server
-CMD ["python", "-m", "uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8888"]
+# Use entrypoint to clone projects at startup
+ENTRYPOINT ["/app/entrypoint.sh"]
