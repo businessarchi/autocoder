@@ -1,0 +1,23 @@
+services:
+  autocoder:
+    build: .
+    container_name: autocoder
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      # Persist project data and registry
+      - autocoder-data:/app/projects
+      - autocoder-registry:/home/autocoder/.autocoder
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  autocoder-data:
+  autocoder-registry:
