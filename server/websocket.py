@@ -382,7 +382,8 @@ class ConnectionManager:
         for connection in connections:
             try:
                 await connection.send_json(message)
-            except Exception:
+            except Exception as e:
+                logger.debug(f"WebSocket send failed (connection likely closed): {e}")
                 dead_connections.append(connection)
 
         # Clean up dead connections
@@ -502,8 +503,10 @@ async def project_websocket(websocket: WebSocket, project_name: str):
             agent_update = await agent_tracker.process_line(line)
             if agent_update:
                 await websocket.send_json(agent_update)
-        except Exception:
-            pass  # Connection may be closed
+        except (WebSocketDisconnect, RuntimeError):
+            pass  # Connection closed — expected
+        except Exception as e:
+            logger.warning(f"Unexpected error in on_output callback: {e}")
 
     async def on_status_change(status: str):
         """Handle status change - broadcast to this WebSocket."""
@@ -512,8 +515,10 @@ async def project_websocket(websocket: WebSocket, project_name: str):
                 "type": "agent_status",
                 "status": status,
             })
-        except Exception:
-            pass  # Connection may be closed
+        except (WebSocketDisconnect, RuntimeError):
+            pass  # Connection closed — expected
+        except Exception as e:
+            logger.warning(f"Unexpected error in on_status_change callback: {e}")
 
     # Register callbacks
     agent_manager.add_output_callback(on_output)
@@ -530,8 +535,10 @@ async def project_websocket(websocket: WebSocket, project_name: str):
                 "line": line,
                 "timestamp": datetime.now().isoformat(),
             })
-        except Exception:
-            pass  # Connection may be closed
+        except (WebSocketDisconnect, RuntimeError):
+            pass  # Connection closed — expected
+        except Exception as e:
+            logger.warning(f"Unexpected error in on_dev_output callback: {e}")
 
     async def on_dev_status_change(status: str):
         """Handle dev server status change - broadcast to this WebSocket."""
@@ -541,8 +548,10 @@ async def project_websocket(websocket: WebSocket, project_name: str):
                 "status": status,
                 "url": devserver_manager.detected_url,
             })
-        except Exception:
-            pass  # Connection may be closed
+        except (WebSocketDisconnect, RuntimeError):
+            pass  # Connection closed — expected
+        except Exception as e:
+            logger.warning(f"Unexpected error in on_dev_status_change callback: {e}")
 
     # Register dev server callbacks
     devserver_manager.add_output_callback(on_dev_output)
